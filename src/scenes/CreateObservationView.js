@@ -11,6 +11,7 @@ import {
   Input,
   Picker,
   Icon,
+  Textarea,
 } from 'native-base';
 import {connect} from 'react-redux';
 import {createObservation} from '../reducers/ObservationsReducer';
@@ -29,7 +30,6 @@ class CreateObservationView extends Component {
       latitude: null,
       longitude: null,
     };
-    this.setDate = this.setDate.bind(this);
   }
 
   onValueChange(value: string) {
@@ -97,7 +97,9 @@ class CreateObservationView extends Component {
             </Item>
             <Item floatingLabel>
               <Label>Notes</Label>
-              <Input
+              <Textarea
+                rowSpan={5}
+                bordered
                 onChangeText={value => {
                   this.setState({notes: value});
                 }}
@@ -124,7 +126,7 @@ class CreateObservationView extends Component {
             <Text>Add</Text>
           </Button>
           <Button full danger style={styles.submit} onPress={this.cancel()}>
-            <Text>Add</Text>
+            <Text>Cancel</Text>
           </Button>
         </Content>
       </Container>
