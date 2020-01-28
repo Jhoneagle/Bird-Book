@@ -5,20 +5,16 @@ import {createAppContainer} from 'react-navigation';
 import {createStackNavigator} from 'react-navigation-stack';
 import {persistor, store} from './store';
 import LoadingView from './scenes/LoadingView';
-import CalenderView from './scenes/CalenderView';
-import CreateEventView from './scenes/CreateEventView';
-import ListEventsView from './scenes/ListEventsView';
+import CreateObservationView from './scenes/CreateObservationView';
+import ListObservationsView from './scenes/ListObservationsView';
 
 let RootNavigation = createStackNavigator(
   {
     Home: {
-      screen: CalenderView,
+      screen: ListObservationsView,
     },
-    ListEvents: {
-      screen: ListEventsView,
-    },
-    NewEvent: {
-      screen: CreateEventView,
+    NewObservation: {
+      screen: CreateObservationView,
     },
   },
   {
@@ -34,17 +30,6 @@ RootNavigation.navigationOptions = {
   headerTitleStyle: {
     fontWeight: 'bold',
   },
-};
-
-RootNavigation.navigationOptions = ({navigation}) => {
-  let tabBarVisible = true;
-  if (navigation.state.index > 0) {
-    tabBarVisible = false;
-  }
-
-  return {
-    tabBarVisible,
-  };
 };
 
 let Navigation = createAppContainer(RootNavigation);

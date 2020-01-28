@@ -4,10 +4,10 @@ import AsyncStorage from '@react-native-community/async-storage';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 import thunk from 'redux-thunk';
 
-import eventsReducer from './reducers/EventsReducer';
+import observationsReducer from './reducers/ObservationsReducer';
 
 const rootReducer = combineReducers({
-  events: eventsReducer,
+  observations: observationsReducer,
 });
 
 const persistConfig = {
