@@ -10,25 +10,20 @@ import {
   Picker,
   Icon,
   Form,
+  Card,
+  CardItem,
 } from 'native-base';
 import {connect} from 'react-redux';
+import {updateSort} from '../reducers/SortReducer';
+import {format} from 'date-fns';
 
 class ListObservationsView extends Component {
   static navigationOptions = {
     title: 'Bird observations',
   };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      shorter: 'time',
-    };
-  }
-
   onValueChange(value: string) {
-    this.setState({
-      shorter: value,
-    });
+    this.props.updateSort(value);
   }
 
   render() {
@@ -52,7 +47,7 @@ class ListObservationsView extends Component {
               placeholder="Select type: "
               placeholderStyle={styles.picker_placeholder}
               placeholderIconColor="#007aff"
-              selectedValue={this.state.shorter}
+              selectedValue={this.props.sorter}
               onValueChange={this.onValueChange.bind(this)}>
               <Picker.Item label="Time" value="time" />
               <Picker.Item label="Species" value="name" />
@@ -61,16 +56,33 @@ class ListObservationsView extends Component {
           </Item>
         </Form>
         <List
-          data={this.props.observations}
-          renderItem={({item, index, separators}) => (
+          initialNumToRender={7}
+          dataArray={this.props.observations}
+          renderRow={item => (
             <ListItem>
-              <Text>
-                I am {item.species} with {item.latitude} and {item.longitude}
-              </Text>
+              <Card>
+                <CardItem header>
+                  <Text>{item.species}</Text>
+                </CardItem>
+                <CardItem>
+                  <Text>{format(new Date(item.timestamp), 'PPpp')}</Text>
+                </CardItem>
+                <CardItem>
+                  <Text>{item.notes}</Text>
+                </CardItem>
+                <CardItem>
+                  <Text>{item.rarity}</Text>
+                </CardItem>
+                <CardItem footer>
+                  <Text>
+                    latitude: {item.latitude} and longitude: {item.longitude}
+                  </Text>
+                </CardItem>
+              </Card>
             </ListItem>
           )}
           keyExtractor={(item, index) => item.species + index}
-          extraData={this.props.observations}
+          extraData={this.props.refresh}
         />
       </Container>
     );
@@ -95,9 +107,53 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = state => {
+  function sortArray(array, by) {
+    if (by === 'time') {
+      return Array.from(array).sort(function(a, b) {
+        const aTime = new Date(a.timestamp);
+        const bTime = new Date(b.timestamp);
+
+        if (aTime < bTime) {
+          return 1;
+        } else if (aTime > bTime) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+    } else if (by === 'name') {
+      return Array.from(array).sort(function(a, b) {
+        return a.species.localeCompare(b.species);
+      });
+    } else if (by === 'rarity') {
+      return Array.from(array).sort(function(a, b) {
+        if (a.rarity === b.rarity) {
+          return a.species.localeCompare(b.species);
+        } else if (
+          a.rarity === 'Common' ||
+          (a.rarity === 'Rare' && b.rarity === 'Extremely rare')
+        ) {
+          return 1;
+        } else {
+          return -1;
+        }
+      });
+    } else {
+      return Array.from(array);
+    }
+  }
+
+  const sorted = sortArray(state.observations, state.sorter);
+  const refresh = state.observations !== sorted;
+
   return {
-    observations: state.observations,
+    observations: sorted,
+    sorter: state.sorter,
+    refresh: refresh,
   };
 };
 
-export default connect(mapStateToProps)(ListObservationsView);
+export default connect(
+  mapStateToProps,
+  {updateSort},
+)(ListObservationsView);

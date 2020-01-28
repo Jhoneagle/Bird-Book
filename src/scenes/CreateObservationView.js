@@ -28,36 +28,36 @@ class CreateObservationView extends Component {
       species: '',
       rarity: 'Common',
       notes: '',
-      latitude: null,
-      longitude: null,
     };
   }
 
   onValueChange(value: string) {
     this.setState({
-      selected: value,
+      rarity: value,
     });
   }
 
   create = () => {
     return () => {
+      var regex = /^[a-zA-Z]+(?:[\s.]+[a-zA-Z]+)*$/g;
+
+      if (!regex.test(this.state.species)) {
+        alert("Species' do have a name you know...");
+        return;
+      }
+
       GetLocation.getCurrentPosition({
         enableHighAccuracy: true,
         timeout: 5000,
       })
         .then(location => {
-          this.setState({
-            latitude: location.latitude,
-            longitude: location.longitude,
-          });
-
           const object = {
             species: this.state.species,
             rarity: this.state.rarity,
             notes: this.state.notes,
             timestamp: new Date(),
-            latitude: this.state.latitude,
-            longitude: this.state.longitude,
+            latitude: location.latitude,
+            longitude: location.longitude,
           };
 
           this.props.createObservation(object);
@@ -82,7 +82,7 @@ class CreateObservationView extends Component {
         <Content padder>
           <Form>
             <Item floatingLabel>
-              <Label>Species name</Label>
+              <Label>Species' name</Label>
               <Input
                 onChangeText={value => {
                   this.setState({species: value});
@@ -92,9 +92,11 @@ class CreateObservationView extends Component {
             </Item>
             <Item floatingLabel>
               <Label>Notes</Label>
-              <Textarea
-                rowSpan={5}
+              <Input
+                numberOfLines={5}
+                multiline={true}
                 bordered
+                style={styles.notes_form}
                 onChangeText={value => {
                   this.setState({notes: value});
                 }}
@@ -106,10 +108,10 @@ class CreateObservationView extends Component {
                 mode="dropdown"
                 iosIcon={<Icon name="arrow-down" />}
                 style={styles.picker}
-                placeholder="Select type: "
+                placeholder="Select rarity: "
                 placeholderStyle={styles.picker_placeholder}
                 placeholderIconColor="#007aff"
-                selectedValue={this.state.selected}
+                selectedValue={this.state.rarity}
                 onValueChange={this.onValueChange.bind(this)}>
                 <Picker.Item label="Common" value="Common" />
                 <Picker.Item label="Rare" value="Rare" />
@@ -118,7 +120,7 @@ class CreateObservationView extends Component {
             </Item>
           </Form>
           <Button full success style={styles.submit} onPress={this.create()}>
-            <Text>Add</Text>
+            <Text>Create</Text>
           </Button>
           <Button full danger style={styles.submit} onPress={this.cancel()}>
             <Text>Cancel</Text>
@@ -139,6 +141,10 @@ const styles = StyleSheet.create({
   },
   submit: {
     margin: 5,
+  },
+  notes_form: {
+    textAlignVertical: 'top',
+    height: 200,
   },
 });
 

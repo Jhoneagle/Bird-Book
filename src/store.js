@@ -5,9 +5,11 @@ import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 import thunk from 'redux-thunk';
 
 import observationsReducer from './reducers/ObservationsReducer';
+import sortReducer from './reducers/SortReducer';
 
 const rootReducer = combineReducers({
   observations: observationsReducer,
+  sorter: sortReducer,
 });
 
 const persistConfig = {
