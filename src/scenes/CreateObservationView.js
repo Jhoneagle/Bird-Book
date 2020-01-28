@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {StyleSheet} from 'react-native';
+import GetLocation from 'react-native-get-location';
 import {
   Container,
   Content,
@@ -38,40 +39,34 @@ class CreateObservationView extends Component {
     });
   }
 
-  options = {
-    enableHighAccuracy: true,
-    timeout: 5000,
-    maximumAge: 0,
-  };
-
-  success(pos) {
-    const crd = pos.coords;
-    this.setState({latitude: crd.latitude, longitude: crd.longitude});
-  }
-
-  error(err) {
-    console.warn(`ERROR(${err.code}): ${err.message}`);
-  }
-
   create = () => {
     return () => {
-      navigator.geolocation.getCurrentPosition(
-        this.success,
-        this.error,
-        this.options,
-      );
+      GetLocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 5000,
+      })
+        .then(location => {
+          this.setState({
+            latitude: location.latitude,
+            longitude: location.longitude,
+          });
 
-      const object = {
-        species: this.state.species,
-        rarity: this.state.rarity,
-        notes: this.state.notes,
-        timestamp: new Date(),
-        latitude: this.state.latitude,
-        longitude: this.state.longitude,
-      };
+          const object = {
+            species: this.state.species,
+            rarity: this.state.rarity,
+            notes: this.state.notes,
+            timestamp: new Date(),
+            latitude: this.state.latitude,
+            longitude: this.state.longitude,
+          };
 
-      this.props.createObservation(object);
-      this.props.navigation.goBack();
+          this.props.createObservation(object);
+          this.props.navigation.goBack();
+        })
+        .catch(error => {
+          const {code, message} = error;
+          console.warn(code, message);
+        });
     };
   };
 

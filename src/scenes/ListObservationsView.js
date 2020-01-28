@@ -1,59 +1,96 @@
 import React, {Component} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {NavigationEvents} from 'react-navigation';
-import {Container, Content, Text, Button} from 'native-base';
-import {SwipeListView} from 'react-native-swipe-list-view';
+import {StyleSheet} from 'react-native';
+import {
+  Container,
+  Text,
+  Button,
+  List,
+  ListItem,
+  Item,
+  Picker,
+  Icon,
+  Form,
+} from 'native-base';
 import {connect} from 'react-redux';
-import {shortObservations} from '../reducers/ObservationsReducer';
 
 class ListObservationsView extends Component {
   static navigationOptions = {
     title: 'Bird observations',
-    shortBy: 'time',
   };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      shorter: 'time',
+    };
+  }
+
+  onValueChange(value: string) {
+    this.setState({
+      shorter: value,
+    });
+  }
 
   render() {
     return (
-      <Container style={styles.container}>
-        <NavigationEvents
-          onDidFocus={() => this.shortObservations(this.state.shortBy)}
+      <Container>
+        <Button
+          transparent
+          style={styles.navigationButton}
+          onPress={() => {
+            this.props.navigation.navigate('NewObservation');
+          }}>
+          <Text>Add new observation</Text>
+        </Button>
+
+        <Form>
+          <Item picker>
+            <Picker
+              mode="dropdown"
+              iosIcon={<Icon name="arrow-down" />}
+              style={styles.picker}
+              placeholder="Select type: "
+              placeholderStyle={styles.picker_placeholder}
+              placeholderIconColor="#007aff"
+              selectedValue={this.state.shorter}
+              onValueChange={this.onValueChange.bind(this)}>
+              <Picker.Item label="Time" value="time" />
+              <Picker.Item label="Species" value="name" />
+              <Picker.Item label="Rarity" value="rarity" />
+            </Picker>
+          </Item>
+        </Form>
+        <List
+          data={this.props.observations}
+          renderItem={({item, index, separators}) => (
+            <ListItem>
+              <Text>
+                I am {item.species} with {item.latitude} and {item.longitude}
+              </Text>
+            </ListItem>
+          )}
+          keyExtractor={(item, index) => item.species + index}
+          extraData={this.props.observations}
         />
-
-        <Content padder>
-          <Button
-            transparent
-            style={styles.navigationButton}
-            onPress={() => {
-              this.props.navigation.navigate('NewObservation');
-            }}>
-            <Text>+</Text>
-          </Button>
-
-          <SwipeListView
-            data={this.props.observations}
-            renderItem={(data, rowMap) => (
-              <View style={styles.container}>
-                <Text>I am {data.species} in a SwipeListView</Text>
-              </View>
-            )}
-          />
-        </Content>
       </Container>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  picker: {
+    width: undefined,
+    margin: 5,
+  },
+  picker_placeholder: {
+    color: '#bfc6ea',
+  },
   navigationButton: {
     alignSelf: 'center',
     margin: 30,
   },
   container: {
-    alignSelf: 'center',
-    margin: 5,
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
 
@@ -63,7 +100,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {shortObservations},
-)(ListObservationsView);
+export default connect(mapStateToProps)(ListObservationsView);

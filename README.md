@@ -12,15 +12,7 @@
 
 (place holder)
 
-## Building
-
-(place holder)
-
 ## Running
-
-(place holder)
-
-## Release
 
 (place holder)
 
