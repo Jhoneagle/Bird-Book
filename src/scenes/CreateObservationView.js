@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, ActivityIndicator} from 'react-native';
 import GetLocation from 'react-native-get-location';
 import {
   Container,
@@ -12,7 +12,6 @@ import {
   Input,
   Picker,
   Icon,
-  Textarea,
 } from 'native-base';
 import {connect} from 'react-redux';
 import {createObservation} from '../reducers/ObservationsReducer';
@@ -28,6 +27,10 @@ class CreateObservationView extends Component {
       species: '',
       rarity: 'Common',
       notes: '',
+      latitude: '',
+      longitude: '',
+      loading: false,
+      errorLocation: '',
     };
   }
 
@@ -37,36 +40,46 @@ class CreateObservationView extends Component {
     });
   }
 
+  requestLocation = () => {
+    this.setState({loading: true});
+
+    GetLocation.getCurrentPosition({
+      enableHighAccuracy: true,
+      timeout: 5000,
+    })
+      .then(location => {
+        this.setState({
+          loading: false,
+          latitude: location.latitude.toString(),
+          longitude: location.longitude.toString(),
+          errorLocation: '',
+        });
+      })
+      .catch(ex => {
+        const {code, message} = ex;
+        console.warn(code, message);
+
+        this.setState({
+          loading: false,
+          errorLocation:
+            'Something went wrong! please check your location settings and try again.',
+        });
+      });
+  };
+
   create = () => {
     return () => {
-      var regex = /^[a-zA-Z]+(?:[\s.]+[a-zA-Z]+)*$/g;
+      const object = {
+        species: this.state.species,
+        rarity: this.state.rarity,
+        notes: this.state.notes,
+        timestamp: new Date(),
+        latitude: this.state.latitude,
+        longitude: this.state.longitude,
+      };
 
-      if (!regex.test(this.state.species)) {
-        alert("Species' do have a name you know...");
-        return;
-      }
-
-      GetLocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 5000,
-      })
-        .then(location => {
-          const object = {
-            species: this.state.species,
-            rarity: this.state.rarity,
-            notes: this.state.notes,
-            timestamp: new Date(),
-            latitude: location.latitude,
-            longitude: location.longitude,
-          };
-
-          this.props.createObservation(object);
-          this.props.navigation.goBack();
-        })
-        .catch(error => {
-          const {code, message} = error;
-          console.warn(code, message);
-        });
+      this.props.createObservation(object);
+      this.props.navigation.goBack();
     };
   };
 
@@ -84,16 +97,17 @@ class CreateObservationView extends Component {
             <Item floatingLabel>
               <Label>Species' name</Label>
               <Input
+                bordered
                 onChangeText={value => {
                   this.setState({species: value});
                 }}
                 value={this.state.species}
               />
             </Item>
-            <Item floatingLabel>
+            <Item stackedLabel>
               <Label>Notes</Label>
               <Input
-                numberOfLines={5}
+                numberOfLines={4}
                 multiline={true}
                 bordered
                 style={styles.notes_form}
@@ -118,10 +132,45 @@ class CreateObservationView extends Component {
                 <Picker.Item label="Extremely rare" value="Extremely rare" />
               </Picker>
             </Item>
+
+            {this.state.loading ? (
+              <ActivityIndicator />
+            ) : (
+              <Text>{this.state.errorLocation}</Text>
+            )}
+
+            <Button
+              disabled={this.state.loading}
+              onPress={this.requestLocation}>
+              <Text>Get Location</Text>
+            </Button>
+
+            <Item floatingLabel>
+              <Label>Latitude</Label>
+              <Input
+                bordered
+                onChangeText={value => {
+                  this.setState({latitude: value});
+                }}
+                value={this.state.latitude}
+              />
+            </Item>
+            <Item floatingLabel>
+              <Label>Longitude</Label>
+              <Input
+                bordered
+                onChangeText={value => {
+                  this.setState({longitude: value});
+                }}
+                value={this.state.longitude}
+              />
+            </Item>
           </Form>
+
           <Button full success style={styles.submit} onPress={this.create()}>
             <Text>Create</Text>
           </Button>
+
           <Button full danger style={styles.submit} onPress={this.cancel()}>
             <Text>Cancel</Text>
           </Button>
@@ -144,7 +193,10 @@ const styles = StyleSheet.create({
   },
   notes_form: {
     textAlignVertical: 'top',
-    height: 200,
+    height: 100,
+  },
+  toRow: {
+    flexDirection: 'row',
   },
 });
 

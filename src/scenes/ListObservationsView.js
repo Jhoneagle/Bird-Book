@@ -1,21 +1,9 @@
 import React, {Component} from 'react';
-import {StyleSheet} from 'react-native';
-import {
-  Container,
-  Text,
-  Button,
-  List,
-  ListItem,
-  Item,
-  Picker,
-  Icon,
-  Form,
-  Card,
-  CardItem,
-} from 'native-base';
+import {StyleSheet, FlatList, SafeAreaView} from 'react-native';
+import {Container, Text, Button, Item, Picker, Icon, Form} from 'native-base';
 import {connect} from 'react-redux';
 import {updateSort} from '../reducers/SortReducer';
-import {format} from 'date-fns';
+import Observation from '../components/Observation';
 
 class ListObservationsView extends Component {
   static navigationOptions = {
@@ -30,12 +18,11 @@ class ListObservationsView extends Component {
     return (
       <Container>
         <Button
-          transparent
           style={styles.navigationButton}
           onPress={() => {
             this.props.navigation.navigate('NewObservation');
           }}>
-          <Text>Add new observation</Text>
+          <Text style={styles.navigationButtonText}>Add new observation</Text>
         </Button>
 
         <Form>
@@ -55,35 +42,15 @@ class ListObservationsView extends Component {
             </Picker>
           </Item>
         </Form>
-        <List
-          initialNumToRender={7}
-          dataArray={this.props.observations}
-          renderRow={item => (
-            <ListItem>
-              <Card>
-                <CardItem header>
-                  <Text>{item.species}</Text>
-                </CardItem>
-                <CardItem>
-                  <Text>{format(new Date(item.timestamp), 'PPpp')}</Text>
-                </CardItem>
-                <CardItem>
-                  <Text>{item.notes}</Text>
-                </CardItem>
-                <CardItem>
-                  <Text>{item.rarity}</Text>
-                </CardItem>
-                <CardItem footer>
-                  <Text>
-                    latitude: {item.latitude} and longitude: {item.longitude}
-                  </Text>
-                </CardItem>
-              </Card>
-            </ListItem>
-          )}
-          keyExtractor={(item, index) => item.species + index}
-          extraData={this.props.refresh}
-        />
+
+        <SafeAreaView style={styles.container}>
+          <FlatList
+            data={this.props.observations}
+            renderItem={({item}) => <Observation item={item} />}
+            keyExtractor={(item, index) => item.species + index}
+            extraData={this.props.refresh}
+          />
+        </SafeAreaView>
       </Container>
     );
   }
@@ -92,14 +59,18 @@ class ListObservationsView extends Component {
 const styles = StyleSheet.create({
   picker: {
     width: undefined,
-    margin: 5,
+    margin: 3,
   },
   picker_placeholder: {
     color: '#bfc6ea',
   },
   navigationButton: {
-    alignSelf: 'center',
-    margin: 30,
+    margin: 8,
+    textAlign: 'right',
+    backgroundColor: '#94ffc4',
+  },
+  navigationButtonText: {
+    color: '#000000',
   },
   container: {
     flex: 1,
